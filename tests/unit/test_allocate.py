@@ -1,6 +1,6 @@
 from datetime import date
 from datetime import timedelta
-from model import Batch, OrderLine, allocate, OutOfStock
+from domain.model import Batch, OrderLine, allocate, OutOfStock
 import pytest
 
 

@@ -1,6 +1,6 @@
 from sqlaclhemy.orm import mapper
 from sqlalchemy import MetaData, Table, Column, Integer, String
-import model
+import domain.model as model
 
 
 metadata = MetaData()
