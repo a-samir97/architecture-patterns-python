@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-import repository, model
+import adapters.repository as repository, domain.model as model
 
 app = Flask(__name__)
 
