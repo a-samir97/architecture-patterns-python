@@ -2,6 +2,11 @@ import domain.model as model
 import service_layer.services as services
 from adapters.repository import FakeRepository
 
+class FakeRepositoryTest():
+    @staticmethod
+    def for_batch(ref, sku, qty, eta=None):
+        return FakeRepository([model.Batch(ref, sku, qty, eta)])
+
 
 class FakeSession():
     commited = False
@@ -11,23 +16,18 @@ class FakeSession():
 
 
 def test_returns_allocation():
-    line = model.OrderLine("ASD", "APPLE", 10)
-    batch = model.Batch("BATCH1", "APPLE", 100, None)
-    repo = FakeRepository([batch])
-
-    result = services.allocate(line, repo, FakeSession())
-
+    repo, session = FakeRepository([]), FakeSession()
+    services.add_batch("BATCH1", "APPLE", 100, None, repo, session)
+    result = services.allocate("ASD", "APPLE", 10, repo, session)
     assert result == "BATCH1"
 
 
 def test_error_for_invalid_sku():
-    line = model.OrderLine("ASD", "APPLE", 10)
-    batch = model.Batch("BATCH1", "ORANGE", 100, None)
-
-    repo = FakeRepository([batch])
-
+    repo, session = FakeRepository([]), FakeSession()
+    services.add_batch("BATCH1", "APPLE", 100, None, repo, session)
+    
     with pytest.raises(services.InvalidSku, match="Invalid sku"):
-        services.allocate(line, repo, FakeSession())
+        services.allocate("ASD", "ORANGE", 10, repo, session)
 
 
 def test_commits():
@@ -39,4 +39,11 @@ def test_commits():
 
     services.allocate(line, repo, session)
 
+    assert session.commited is True
+
+
+def test_add_batch():
+    repo, session = FakeRepository([]), FakeSession()
+    services.add_batch("BATCH1", "APPLE", 100, None, repo, session)
+    assert repo.get("BATCH1") is not None
     assert session.commited is True

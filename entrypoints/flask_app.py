@@ -36,3 +36,13 @@ def allocate_endpoint():
 
     session.commit()
     return jsonify({'batchref': batchref}), 201
+
+
+@app.route('/add_batch', methods=['POST'])
+def add_batch():
+    session = get_session()
+    repo = repository.SqlAlchemyRepository(session)
+    services.add_batch(
+        request.json['ref'], request.json['sku'], request.json['qty'], request.json['eta'], repo, session
+    )
+    return 'OK', 201
