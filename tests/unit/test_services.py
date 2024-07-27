@@ -47,3 +47,29 @@ def test_add_batch():
     services.add_batch("BATCH1", "APPLE", 100, None, repo, session)
     assert repo.get("BATCH1") is not None
     assert session.commited is True
+
+
+class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
+    def __init__(self):
+        self.batches = FakeRepository([])
+        self.committed = False
+
+    def commit(self):
+        self.committed = True
+
+    def rollback(self):
+        pass
+
+
+def test_add_batch_uow():
+    uow = FakeUnitOfWork()
+    services.add_batch("BATCH1", "APPLE", 100, None, uow)
+    assert uow.batches.get("BATCH1") is not None
+    assert uow.committed
+
+def test_allocate_returns_allocation():
+    uow = FakeUnitOfWork()
+    services.add_batch("BATCH1", "APPLE", 100, None, uow)
+    result = services.allocate("ASD", "APPLE", 10, uow)
+    assert result == "BATCH1"
+    
