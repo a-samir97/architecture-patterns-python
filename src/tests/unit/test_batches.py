@@ -1,17 +1,19 @@
-from domain.model import Batch, OrderLine
 from datetime import date
+
+from src.domain.model import Batch
+from src.domain.model import OrderLine
 
 
 def make_batch_and_line(sku, batch_qty, line_qty):
     return (
         Batch("BATCH_1", sku, batch_qty, date.today()),
-        OrderLine("Order_1", sku, line_qty)
+        OrderLine("Order_1", sku, line_qty),
     )
 
 
 def test_allocating_to_a_batch_reduces_the_available_quantity():
     batch = Batch("batch_1", "SMALL_TABLE", qty=20, eta=date.today())
-    line = OrderLine('order_ref', "SMALL_TABLE", 2)
+    line = OrderLine("order_ref", "SMALL_TABLE", 2)
 
     batch.allocate(line)
 

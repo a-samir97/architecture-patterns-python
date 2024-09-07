@@ -1,27 +1,36 @@
 import threading
+import time
+import traceback
+
+import pytest
+from src.domain import model
+from src.service_layer import unit_of_work
+from src.tests.random_refs import random_batchref
+from src.tests.random_refs import random_orderid
+from src.tests.random_refs import random_sku
+
 
 def insert_batch(session, ref, sku, qty, eta):
     session.execute(
         "INSERT INTO batches (reference, sku, _purchased_quantity, eta)"
         " VALUES (:ref, :sku, :qty, :eta)",
-        dict(ref=ref, sku=sku, qty=qty, eta=eta)
+        dict(ref=ref, sku=sku, qty=qty, eta=eta),
     )
 
 
 def get_allocated_batch_ref(session, orderid, sku):
     [[order_line_id]] = session.execute(
         "SELECT id FROM order_lines WHERE orderid=:orderid AND sku=:sku",
-        dict(orderid=orderid, sku=sku)
+        dict(orderid=orderid, sku=sku),
     )
     [[batchref]] = session.execute(
         "SELECT batch_id FROM allocations WHERE orderline_id=:order_line_id",
-        dict(order_line_id=order_line_id)
+        dict(order_line_id=order_line_id),
     )
     return batchref
 
 
 def test_uow_can_retrieve_a_batch_and_allocate_to_it(session_factory):
-
     # to inialized batches
     session = session_factory()
     insert_batch(session, "batch1", "GENERIC-SOFA", 100, None)
@@ -36,7 +45,7 @@ def test_uow_can_retrieve_a_batch_and_allocate_to_it(session_factory):
         uow.commit()
 
     # check the batch has been allocated
-    batchref = get_allocate_batch_reg(session, "order1", "GENERIC-SOFA")
+    batchref = get_allocated_batch_ref(session, "order1", "GENERIC-SOFA")
     assert batchref == "batch1"
 
 
@@ -79,6 +88,7 @@ def try_to_allocate(orderid, sku, exceptions):
         print(traceback.format_exc())
         exceptions.append(e)
 
+
 def test_concurrent_updates_to_version_are_not_allowed(posgtes_session_factory):
     sku, batch = random_sku(), random_batchref()
 
@@ -90,7 +100,7 @@ def test_concurrent_updates_to_version_are_not_allowed(posgtes_session_factory):
 
     order1, order2 = random_orderid(1), random_orderid(2)
 
-    exceptions = [] 
+    exceptions = []
     try_to_allocate_order_1 = lambda: try_to_allocate(order1, sku, exceptions)
     try_to_allocate_order_2 = lambda: try_to_allocate(order2, sku, exceptions)
 
@@ -108,16 +118,18 @@ def test_concurrent_updates_to_version_are_not_allowed(posgtes_session_factory):
     assert version == 2
 
     [exception] = exceptions
-    assert 'could not serialize access due to concurrent update' in str(exception)
+    assert "could not serialize access due to concurrent update" in str(exception)
 
-    orders = list(session.execute(
-        "SELECT orderid FROM allocations"
-        " JOIN batches ON allocations.batch_id = batches.id"
-        " JOIN order_lines ON allocations.orderline_id = order_lines.id"
-        " WHERE order_lines.sku=:sku",
-        dict(sku=sku),
-    ))
+    orders = list(
+        session.execute(
+            "SELECT orderid FROM allocations"
+            " JOIN batches ON allocations.batch_id = batches.id"
+            " JOIN order_lines ON allocations.orderline_id = order_lines.id"
+            " WHERE order_lines.sku=:sku",
+            dict(sku=sku),
+        )
+    )
     assert len(orders) == 1
 
     with unit_of_work.SqlAlchemyUnitOfWork() as uow:
-        uow.session.execute('select 1')
+        uow.session.execute("select 1")
