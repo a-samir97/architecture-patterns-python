@@ -1,5 +1,9 @@
 import abc
-from adapters import repository
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from src.adapters import repository
+from src.config import db_config as config
 
 
 class AbstractUnitOfWork(abc.ABC):
@@ -18,14 +22,12 @@ class AbstractUnitOfWork(abc.ABC):
         raise NotImplementedError
 
 
-DEFAULT_SESSION_FACTORY = sessionmaker(bind=create_engine(
-    config.get_postgres_uri(),
-    isolation_level="REPEATABLE READ")
+DEFAULT_SESSION_FACTORY = sessionmaker(
+    bind=create_engine(config.get_postgres_uri(), isolation_level="REPEATABLE READ")
 )
 
 
 class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
-
     def __init__(self, session_factory=DEFAULT_SESSION_FACTORY) -> None:
         self.session_factory = session_factory
 

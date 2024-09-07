@@ -1,14 +1,17 @@
-import domain.model as model
-import service_layer.services as services
-from adapters.repository import FakeRepository
+import pytest
+import src.service_layer.services as services
+from src import domain as model
+from src.adapters.repository import FakeRepository
+from src.service_layer import unit_of_work
 
-class FakeRepositoryTest():
+
+class FakeRepositoryTest:
     @staticmethod
     def for_batch(ref, sku, qty, eta=None):
         return FakeRepository([model.Batch(ref, sku, qty, eta)])
 
 
-class FakeSession():
+class FakeSession:
     commited = False
 
     def commit(self):
@@ -25,7 +28,7 @@ def test_returns_allocation():
 def test_error_for_invalid_sku():
     repo, session = FakeRepository([]), FakeSession()
     services.add_batch("BATCH1", "APPLE", 100, None, repo, session)
-    
+
     with pytest.raises(services.InvalidSku, match="Invalid sku"):
         services.allocate("ASD", "ORANGE", 10, repo, session)
 
@@ -67,9 +70,9 @@ def test_add_batch_uow():
     assert uow.batches.get("BATCH1") is not None
     assert uow.committed
 
+
 def test_allocate_returns_allocation():
     uow = FakeUnitOfWork()
     services.add_batch("BATCH1", "APPLE", 100, None, uow)
     result = services.allocate("ASD", "APPLE", 10, uow)
     assert result == "BATCH1"
-    

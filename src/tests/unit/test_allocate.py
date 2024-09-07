@@ -1,12 +1,18 @@
 from datetime import date
 from datetime import timedelta
-from domain.model import Batch, OrderLine, allocate, OutOfStock
+
 import pytest
+from src.domain.model import allocate
+from src.domain.model import Batch
+from src.domain.model import OrderLine
+from src.domain.model import OutOfStock
 
 
 def test_prefers_current_stock_batches_to_shipments():
     in_stock_batch = Batch("IN_STOCK", "IPHONE", 10, eta=None)
-    shipment_batch = Batch("SHIPMENT", "IPHONE", 10, eta=date.today() + timedelta(days=1))
+    shipment_batch = Batch(
+        "SHIPMENT", "IPHONE", 10, eta=date.today() + timedelta(days=1)
+    )
     line = OrderLine("1_REF", "IPHONE", 5)
 
     allocation = allocate(line, [in_stock_batch, shipment_batch])
@@ -20,7 +26,7 @@ def test_prefers_eariler_batches():
     earliest = Batch("TEST_1", "IPHONE", 10, date.today())
     tomorrow = Batch("TEST_2", "IPHONE", 10, date.today() + timedelta(days=1))
     later = Batch("TEST_3", "IPHONE", 10, date.today() + timedelta(days=2))
-    line = OrderLine('ORDER_1', "IPHONE", 5)
+    line = OrderLine("ORDER_1", "IPHONE", 5)
 
     allocate(line, [earliest, tomorrow, later])
 

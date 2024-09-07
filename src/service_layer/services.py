@@ -1,7 +1,8 @@
-import domain.model as model
-import unit_of_work
 from datetime import date
 from typing import Optional
+
+from src.domain import model
+from src.service_layer import unit_of_work
 
 
 class InvalidSku(Exception):
@@ -13,8 +14,12 @@ def is_valid_sku(sku, batches):
 
 
 def add_batch(
-        ref: str, sku: str, qty: int,
-        eta: Optional[date], uow: unit_of_work.AbstractUnitOfWork):
+    ref: str,
+    sku: str,
+    qty: int,
+    eta: Optional[date],
+    uow: unit_of_work.AbstractUnitOfWork,
+):
     with uow:
         product = uow.products.get(sku=sku)
         if product is None:
@@ -24,10 +29,7 @@ def add_batch(
         uow.commit()
 
 
-def allocate(
-        orderid: str, sku: str,
-        qty: int, uow: unit_of_work.AbstractUnitOfWork):
-
+def allocate(orderid: str, sku: str, qty: int, uow: unit_of_work.AbstractUnitOfWork):
     line = model.OrderLine(orderid, sku, qty)
 
     with uow:

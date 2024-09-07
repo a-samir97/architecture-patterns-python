@@ -1,6 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 from typing import List
-import domain.model as model
+
+from src.domain import model
 
 
 class AbstractRepository(ABC):
@@ -46,7 +48,6 @@ class FakeRepository(AbstractRepository):
 
 
 class AbstractProductRepository(ABC):
-
     @abstractmethod
     def add(self, product):
         ...
