@@ -31,7 +31,7 @@ _____________________________________________________________________________
 - The unit of work pattern is abstraction around data integrity
     - helps to enforce consistency of our domain model, and improves performance
 - works closely with Repository and Service layer patterns
-    - completes abstractions over data access by representing atomic updates, each of service-layer use cases runs in a single unit of work that succeeds or failas a block
+    - completes abstractions over data access by representing atomic updates, each of service-layer use cases runs in a single unit of work that succeeds or fails a block
 - Lovely case for a `Context Manager`
     - `Context Manager` idiomatic way of defining and managing resources in Python. we can use `context manager` to automatically roll back the process at the end of the request, which means the system is safe by default.
 - SQLAlchemy already implements (UOW) Pattern 
@@ -40,7 +40,7 @@ _____________________________________________________________________________
 # Chapter 7 (Aggregates and Consistency Boundaries)
 - Aggregate Pattern: is just a domain object that contains other domain objects and lets us treat the whole collection as a single unit
 - Aggregates are your entrypoint into the domain model
-    - by restricting the number of ways that can be changed, which make the system easier.
+    - by restricting the number of ways that can be changed, which makes the system easier to maintain and reason about.
 - Aggregates are in charge of a consistency boundary
     - aggregate job to check the objects within it are consistent with each other and with business rules and to reject changes that break the rules of our system.
 - Aggregates and Concurrency issues go together
