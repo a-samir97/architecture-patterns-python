@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from src import domain as model
+from src.domain import model
 from src.service_layer import unit_of_work
 
 
