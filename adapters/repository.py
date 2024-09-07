@@ -42,3 +42,14 @@ class FakeRepository(AbstractRepository):
 
     def list(self):
         return list(self._batches)
+
+
+class AbstractProductRepository(ABC):
+
+    @abstractmethod
+    def add(self, product):
+        ...
+
+    @abstractmethod
+    def get(self, sku) -> model.Product:
+        ...
